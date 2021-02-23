@@ -41,7 +41,7 @@ class Tree {
     return this.children.size > 0;
   }
 
-  getDeepChild(keys) {
+  getDeepChild(keys) { // ['one', 'two', 'three']
     const [key, ...rest] = keys;
     const node = this.getChild(key);
     if (!node || rest.length === 0) {
