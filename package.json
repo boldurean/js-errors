@@ -37,6 +37,7 @@
     "jest-cli": "^26.6.3"
   },
   "dependencies": {
+    "@hexlet/fs": "^0.4.1",
     "@hexlet/trees": "^0.7.1",
     "debug": "^4.3.1",
     "lodash": "^4.17.20"
