@@ -1,4 +1,3 @@
-// @ts-check
 import path from 'path';
 import errors from 'errno'; // eslint-disable-line
 import Tree from '@hexlet/trees'; // eslint-disable-line
