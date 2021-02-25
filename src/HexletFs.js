@@ -1,10 +1,16 @@
+// @ts-check
 import path from 'path';
-import Tree from '@hexlet/trees';
-import { Dir, File } from '@hexlet/fs';
+import errors from 'errno'; // eslint-disable-line
+import Tree from '@hexlet/trees'; // eslint-disable-line
+import { Dir, File } from '@hexlet/fs'; // eslint-disable-line
 
-const getPathParts = (filepath) => filepath.split(path.sep).filter((part) => part !== '');
+import HexletFsError from './HexletFsError.js';
 
-export default class HexletFs {
+const getPathParts = (filepath) => (
+  filepath.split(path.sep).filter((part) => part !== '')
+);
+
+export default class {
   constructor() {
     this.tree = new Tree('/', new Dir('/'));
   }
@@ -12,69 +18,72 @@ export default class HexletFs {
   statSync(filepath) {
     const current = this.findNode(filepath);
     if (!current) {
-      return null;
+      throw new HexletFsError(errors.code.ENOENT, filepath);
     }
     return current.getMeta().getStats();
   }
 
-  mkdirSync(filepath) {
-    const current = this.findNode(filepath);
-    if (current) {
-      return false;
+  // BEGIN (write your solution here)
+  copySync(src, dest) {
+    const data = this.readFileSync(src);
+    const destNode = this.findNode(dest);
+    if (destNode && destNode.getMeta().isDirectory()) {
+      const { base } = path.parse(src);
+      const fullDest = path.join(dest, base);
+      return this.writeFileSync(fullDest, data);
     }
-    const { base, dir } = path.parse(filepath);
+    return this.writeFileSync(dest, data);
+  }
+  // END
+
+  writeFileSync(filepath, body) {
+    const { dir, base } = path.parse(filepath);
     const parent = this.findNode(dir);
     if (!parent || !parent.getMeta().isDirectory()) {
-      return false;
+      throw new HexletFsError(errors.code.ENOENT, filepath);
     }
-    parent.addChild(base, new Dir(base));
-    return true;
-  }
-
-  mkdirpSync(filepath) {
-    const current = this.findNode(filepath);
-    if (!current) {
-      const { dir } = path.parse(filepath);
-      this.mkdirpSync(dir);
-    } else if (!current.getMeta().isDirectory()) {
-      return false;
+    const current = parent.getChild(base);
+    if (current && current.getMeta().isDirectory()) {
+      throw new HexletFsError(errors.code.EISDIR, filepath);
     }
-    return this.mkdirSync(filepath);
+    parent.addChild(base, new File(base, body));
   }
 
   touchSync(filepath) {
-    const { base, dir } = path.parse(filepath);
+    const { dir, base } = path.parse(filepath);
     const parent = this.findNode(dir);
     if (!parent) {
-      return false;
+      throw new HexletFsError(errors.code.ENOENT, filepath);
     }
     if (!parent.getMeta().isDirectory()) {
-      return false;
+      throw new HexletFsError(errors.code.ENOTDIR, filepath);
     }
-    parent.addChild(base, new File(base, ''));
-    return true;
+    return parent.addChild(base, new File(base, ''));
   }
 
-  rmdirSync(filepath) {
-    const { base } = path.parse(filepath);
+  mkdirpSync(filepath) {
+    getPathParts(filepath).reduce((subtree, part) => {
+      const current = subtree.getChild(part);
+      if (!current) {
+        return subtree.addChild(part, new Dir(part));
+      }
+      if (!current.getMeta().isDirectory()) {
+        throw new HexletFsError(errors.code.ENOTDIR, filepath);
+      }
+
+      return current;
+    }, this.tree);
+  }
+
+  readFileSync(filepath) {
     const current = this.findNode(filepath);
     if (!current) {
-      return false;
+      throw new HexletFsError(errors.code.ENOENT, filepath);
     }
-    if (!current.getMeta().isDirectory() || current.hasChildren()) {
-      return false;
+    if (current.getMeta().isDirectory()) {
+      throw new HexletFsError(errors.code.EISDIR, filepath);
     }
-    current.getParent().removeChild(base);
-    return true;
-  }
-
-  readdirSync(filepath) {
-    const current = this.findNode(filepath);
-    if (!current || !current.getMeta().isDirectory()) {
-      return false;
-    }
-    return current.getChildren()
-      .map((child) => child.getKey());
+    return current.getMeta().getBody();
   }
 
   findNode(filepath) {
