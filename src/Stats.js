@@ -1,13 +1,14 @@
 export default class Stats {
-  constructor(obj) {
-    this.obj = obj;
+  constructor(file, directory) {
+    this.file = file;
+    this.directory = directory;
   }
 
   isFile() {
-    return this.obj.isFile();
+    return this.file;
   }
 
   isDirectory() {
-    return this.obj.isDirectory();
+    return this.directory;
   }
 }

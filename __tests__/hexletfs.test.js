@@ -12,13 +12,6 @@ describe('FS', () => {
     files.touchSync('/etc/nginx/nginx.conf');
   });
 
-  it.only('check type', () =>{
-    expect(files.statSync('/etc/nginx').isDirectory()).toBeTruthy();
-    expect(files.statSync('/etc/nginx').isFile()).toBeFalsy();
-    expect(files.statSync('/opt/file.txt').isDirectory()).toBeFalsy();
-    expect(files.statSync('/opt/file.txt').isFile()).toBeTruthy();
-  });
-
   it('#copySync', () => {
     expect(() => files.copySync('undefined', '/etc'))
       .toThrow(/ENOENT/);

@@ -6,7 +6,7 @@ export default class Node {
   }
 
   getStats() {
-    return new Stats(this);
+    return new Stats(this.isFile(), this.isDirectory());
   }
 
   getName() {
