@@ -1,4 +1,4 @@
-import HexletFs from '../src/HexletFs.js';
+import HexletFs from '@hexlet/fs';
 
 describe('FS', () => {
   let files;
@@ -11,6 +11,13 @@ describe('FS', () => {
     files.mkdirpSync('/etc/nginx/conf.d');
     files.touchSync('/etc/nginx/nginx.conf');
   });
+
+  it.only('check type', () =>{
+    expect(files.statSync('/etc/nginx').isDirectory()).toBeTruthy();
+    expect(files.statSync('/etc/nginx').isFile()).toBeFalsy();
+    expect(files.statSync('/opt/file.txt').isDirectory()).toBeFalsy();
+    expect(files.statSync('/opt/file.txt').isFile()).toBeTruthy();
+  })
 
   it('#copySync', () => {
     expect(() => files.copySync('undefined', '/etc'))
